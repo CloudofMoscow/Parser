@@ -1,12 +1,12 @@
 package com.example.crawler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RssCrawler {
     public List<Article> fetchArticles(String rssUrl) throws Exception {
