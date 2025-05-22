@@ -1,80 +1,80 @@
-# News Crawler Java Maven Project
+# News Crawler — Java Maven Project
 
-## Задание
+## Описание
 
-**1. Crawler:**
-- Сбор публикаций с RSS-ленты (или сайта).
-- Скачивание html/xml страниц.
-- Обработка http-кодов ошибок.
-- Парсинг публикации: заголовок, время публикации, автор, ссылка.
+Этот проект реализует систему для сбора новостей с RSS-ленты, обработки публикаций через очереди RabbitMQ и сохранения результатов в ElasticSearch.  
+Вся обработка построена на микросервисной архитектуре с использованием Docker Compose.
 
-**2. Очереди (RabbitMQ):**
-- Использование брокера RabbitMQ.
-- Очередь задач (task_queue) — ссылки на публикации.
-- Очередь результатов (result_queue) — публикация (заголовок, дата, текст, автор, ссылка).
-- Защита от потери сообщений (Ack).
-- Использование Basic.Consume (и пример Basic.Get).
+## Основные компоненты
 
-**3. ElasticSearch:**
-- Индекс с полями: заголовок, время публикации, текст, ссылка, автор.
-- Идентификатор — хэш от заголовка и даты (или ссылки).
-- Проверка наличия документа по id (не добавлять дубликаты).
-- Сохранение/обновление документов из result_queue.
-- Поиск по нескольким полям с логическими операторами (AND/OR).
-- Сложные полнотекстовые запросы (fuzziness).
-- Агрегации (по авторам, по датам публикаций).
+- **Crawler** — парсит RSS-ленту, извлекает публикации (заголовок, дата, автор, ссылка, текст).
+- **RabbitMQ** — брокер сообщений, используется для очередей задач и результатов.
+- **Worker** — обрабатывает задачи из очереди, скачивает и парсит публикации.
+- **ElasticSearch** — хранит публикации, поддерживает поиск и агрегации.
 
 ## Быстрый старт
-1. Остановите старые контейнеры (если есть):
-   ```powershell
+
+1. Остановите старые контейнеры (если были запущены):
+   ```sh
    docker-compose down -v
    ```
 2. Соберите и запустите все сервисы:
-   ```powershell
+   ```sh
    docker-compose up --build
    ```
-3. Если приложение стартовало раньше сервисов, перезапустите только приложение:
-   ```powershell
+3. Если приложение стартовало раньше зависимых сервисов, перезапустите только приложение:
+   ```sh
    docker-compose restart app
    ```
 
-## Проверка выполнения задания
+## Проверка работы
 
-### Проверка очередей RabbitMQ
-- Откройте http://localhost:15672 (логин/пароль: guest/guest)
-- Должны быть очереди `task_queue` и `result_queue`.
+### RabbitMQ
+
+- Откройте интерфейс управления: http://localhost:15672 (логин/пароль: guest/guest)
+- Убедитесь, что существуют очереди `task_queue` и `result_queue`.
 - Сообщения появляются и исчезают по мере обработки.
 
-### Проверка данных в ElasticSearch
+### ElasticSearch
+
 - Получить все публикации:
-  ```powershell
+  ```sh
   curl -X GET "http://localhost:9200/news/_search?pretty"
   ```
 - Поиск по заголовку:
-  ```powershell
+  ```sh
   curl -X POST "http://localhost:9200/news/_search?pretty" -H "Content-Type: application/json" -d "{\"query\":{\"match\":{\"title\":\"AI\"}}}"
   ```
 - Поиск по нескольким полям (AND):
-  ```powershell
+  ```sh
   curl -X POST "http://localhost:9200/news/_search?pretty" -H "Content-Type: application/json" -d "{\"query\":{\"bool\":{\"must\":[{\"match\":{\"title\":\"AI\"}},{\"match\":{\"author\":\"Автор\"}}]}}}"
   ```
 - Поиск по нескольким полям (OR):
-  ```powershell
+  ```sh
   curl -X POST "http://localhost:9200/news/_search?pretty" -H "Content-Type: application/json" -d "{\"query\":{\"bool\":{\"should\":[{\"match\":{\"title\":\"AI\"}},{\"match\":{\"author\":\"Автор\"}}],\"minimum_should_match\":1}}}"
   ```
 - Fuzzy-поиск по тексту:
-  ```powershell
+  ```sh
   curl -X POST "http://localhost:9200/news/_search?pretty" -H "Content-Type: application/json" -d "{\"query\":{\"match\":{\"text\":{\"query\":\"искусственный интелект\",\"fuzziness\":\"AUTO\"}}}}"
   ```
 - Агрегация по авторам:
-  ```powershell
+  ```sh
   curl -X POST "http://localhost:9200/news/_search?pretty" -H "Content-Type: application/json" -d "{\"size\":0,\"aggs\":{\"by_author\":{\"terms\":{\"field\":\"author.keyword\"}}}}"
   ```
 - Агрегация по датам публикаций:
-  ```powershell
+  ```sh
   curl -X POST "http://localhost:9200/news/_search?pretty" -H "Content-Type: application/json" -d "{\"size\":0,\"aggs\":{\"by_date\":{\"date_histogram\":{\"field\":\"pubDate\",\"calendar_interval\":\"day\"}}}}"
   ```
 
-### Проверка работы Basic.Get
-- В интерфейсе RabbitMQ выберите очередь, используйте кнопку Get Message (Basic.Get).
+### Проверка очереди через Basic.Get
+
+- В интерфейсе RabbitMQ выберите нужную очередь и используйте кнопку "Get Message (Basic.Get)".
+
+## Примечания
+
+- Для работы требуется установленный Docker и Docker Compose.
+- Все сервисы автоматически поднимаются и связываются через docker-compose.
+- Для ElasticSearch отключена авторизация и кластер работает в режиме single-node.
+
+---
 
