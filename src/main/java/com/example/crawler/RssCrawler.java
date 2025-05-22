@@ -9,15 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RssCrawler {
-    public static class Article {
-        public String title;
-        public String link;
-        public String pubDate;
-        public String author;
-        public String description;
-    }
-
-    public List<Article> fetchArticles(String rssUrl) throws IOException {
+    public List<Article> fetchArticles(String rssUrl) throws Exception {
         List<Article> articles = new ArrayList<>();
         Document doc = Jsoup.connect(rssUrl).get();
         Elements items = doc.select("item");

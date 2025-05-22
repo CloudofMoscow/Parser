@@ -4,7 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-public class TaskProducer {
+public class TaskProducer implements AutoCloseable {
     private final String queueName;
     private final ConnectionFactory factory;
 
@@ -21,5 +21,10 @@ public class TaskProducer {
             channel.basicPublish("", queueName, null, message.getBytes());
             System.out.println("[TaskProducer] Sent: " + message);
         }
+    }
+
+    @Override
+    public void close() {
+        // Нет ресурсов для закрытия, метод оставлен пустым
     }
 }

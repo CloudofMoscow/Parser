@@ -1,0 +1,29 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# Eclipse/IntelliJ IDEA
+*.iml
+.idea/
+*.ipr
+*.iws
+*.class
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Environment files
+.env
+
+# Others
+dependency-reduced-pom.xml

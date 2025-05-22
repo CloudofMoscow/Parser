@@ -4,7 +4,7 @@ public class App {
     public static void main(String[] args) {
         System.out.println("News Crawler started!");
         String rssUrl = "https://habr.com/ru/rss/articles/";
-        String rabbitHost = "rabbitmq";
+        String rabbitHost = "localhost";
         String taskQueue = "task_queue";
         String resultQueue = "result_queue";
         String elasticHost = "elasticsearch";
